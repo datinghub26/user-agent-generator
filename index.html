@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Random User Agent Generator</title>
+  <title>Advanced User Agent Generator</title>
   <style>
     body {
       font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
@@ -14,7 +14,7 @@
       min-height: 100vh;
     }
     .container {
-      max-width: 800px;
+      max-width: 900px;
       margin: 40px auto;
       background: rgba(255,255,255,0.1);
       padding: 30px;
@@ -22,170 +22,167 @@
       backdrop-filter: blur(10px);
       box-shadow: 0 10px 30px rgba(0,0,0,0.3);
     }
-    h1 { text-align: center; margin-bottom: 10px; }
-    p { text-align: center; opacity: 0.9; }
-    .generator {
-      margin: 30px 0;
-      text-align: center;
+    h1 { text-align: center; }
+    label { display: block; margin: 12px 0 6px; font-weight: bold; }
+    select, input, button {
+      padding: 10px;
+      border-radius: 8px;
+      border: none;
+      width: 100%;
+      margin-bottom: 10px;
     }
     button {
       background: #fff;
       color: #667eea;
-      border: none;
-      padding: 14px 32px;
-      font-size: 18px;
       font-weight: bold;
-      border-radius: 50px;
       cursor: pointer;
-      transition: all 0.3s;
+      font-size: 16px;
     }
-    button:hover {
-      transform: translateY(-3px);
-      box-shadow: 0 10px 20px rgba(0,0,0,0.2);
-    }
-    .ua-box {
+    button:hover { transform: scale(1.03); }
+    .ua-list {
       background: rgba(0,0,0,0.3);
-      padding: 20px;
+      padding: 15px;
       border-radius: 12px;
-      margin: 20px 0;
-      word-break: break-all;
+      max-height: 400px;
+      overflow-y: auto;
       font-family: monospace;
-      font-size: 15px;
-      min-height: 80px;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      text-align: center;
-    }
-    .options {
-      display: flex;
-      flex-wrap: wrap;
-      gap: 15px;
-      justify-content: center;
-      margin: 20px 0;
-    }
-    label {
-      background: rgba(255,255,255,0.2);
-      padding: 8px 16px;
-      border-radius: 30px;
-      cursor: pointer;
-    }
-    .copy-btn {
-      margin-top: 10px;
-      padding: 10px 20px;
       font-size: 14px;
+      white-space: pre-wrap;
     }
-    footer {
-      text-align: center;
-      margin-top: 40px;
-      opacity: 0.8;
-      font-size: 14px;
-    }
+    .copy-all { margin-top: 15px; }
   </style>
 </head>
 <body>
   <div class="container">
-    <h1>🎲 Random User Agent Generator</h1>
-    <p>Generate realistic browser User Agents instantly</p>
+    <h1>🎲 Advanced User Agent Generator</h1>
 
-    <div class="options">
-      <label><input type="checkbox" id="chrome" checked> Chrome</label>
-      <label><input type="checkbox" id="firefox" checked> Firefox</label>
-      <label><input type="checkbox" id="safari" checked> Safari</label>
-      <label><input type="checkbox" id="edge" checked> Edge</label>
+    <label>Operating System</label>
+    <select id="os" onchange="updateOptions()">
+      <option value="desktop">Desktop (Windows/macOS/Linux)</option>
+      <option value="android">Android</option>
+      <option value="ios">iPhone / iOS</option>
+    </select>
+
+    <div id="desktop-options">
+      <label>Browser</label>
+      <select id="browser">
+        <option value="chrome">Chrome</option>
+        <option value="firefox">Firefox</option>
+        <option value="safari">Safari (macOS)</option>
+        <option value="edge">Edge</option>
+      </select>
+      <label>macOS Apple Silicon (M-series)</label>
+      <select id="mac-version">
+        <option value="10_15_7">macOS 10.15.7 (Intel-like)</option>
+        <option value="11_0">macOS 11+ (M1/M2/M3/M4)</option>
+      </select>
     </div>
 
-    <div class="generator">
-      <button onclick="generateUA()">Generate New User Agent</button>
+    <div id="android-options" style="display:none;">
+      <label>Android Version</label>
+      <select id="android-ver">
+        <option value="13">Android 13</option>
+        <option value="14">Android 14</option>
+        <option value="15">Android 15</option>
+        <option value="16">Android 16</option>
+      </select>
+      <label>Chrome Version</label>
+      <select id="chrome-ver">
+        <option value="149.0.7827.116">149.0.7827.116</option>
+        <option value="148.0.7778.167">148.0.7778.167</option>
+        <option value="147.0.7727.24">147.0.7727.24</option>
+      </select>
     </div>
 
-    <div class="ua-box" id="ua-display">
-      Click the button to generate a User Agent
+    <div id="ios-options" style="display:none;">
+      <label>iOS / Safari Version</label>
+      <select id="ios-ver">
+        <option value="26.5.1">iOS 26.5.1 Safari 26.5.1</option>
+        <option value="26.5">iOS 26.5 Safari 26.5</option>
+        <option value="26.4.1">iOS 26.4.1 Safari 26.4.1</option>
+        <option value="26.4">iOS 26.4 Safari 26.4</option>
+        <option value="26.3">iOS 26.3 Safari 26.3</option>
+        <option value="26.2">iOS 26.2 Safari 26.2</option>
+        <option value="26.1">iOS 26.1 Safari 26.1</option>
+        <option value="26.0">iOS 26.0 Safari 26.0</option>
+      </select>
     </div>
 
-    <button class="copy-btn" onclick="copyToClipboard()">📋 Copy to Clipboard</button>
+    <label>Number of User Agents to Generate</label>
+    <input type="number" id="count" value="5" min="1" max="50">
+
+    <button onclick="generateUAs()">Generate User Agents</button>
+
+    <div class="ua-list" id="ua-list">Generated UAs will appear here...</div>
+    <button class="copy-all" onclick="copyAll()">📋 Copy All</button>
   </div>
 
-  <footer>
-    Hosted on GitHub Pages • Made with ❤️
-  </footer>
-
   <script>
-    const browsers = {
-      chrome: {
-        name: "Chrome",
-        prefixes: ["Mozilla/5.0"],
-        os: ["Windows NT 10.0; Win64; x64", "Macintosh; Intel Mac OS X 10_15_7", "X11; Linux x86_64"],
-        engine: "AppleWebKit/537.36 (KHTML, like Gecko)",
-        versionRange: [100, 130]
-      },
-      firefox: {
-        name: "Firefox",
-        prefixes: ["Mozilla/5.0"],
-        os: ["Windows NT 10.0; Win64; x64", "Macintosh; Intel Mac OS X 10.15", "X11; Linux x86_64"],
-        engine: "Gecko/20100101",
-        versionRange: [90, 130]
-      },
-      safari: {
-        name: "Safari",
-        prefixes: ["Mozilla/5.0"],
-        os: ["Macintosh; Intel Mac OS X 10_15_7"],
-        engine: "AppleWebKit/605.1.15 (KHTML, like Gecko)",
-        versionRange: [15, 18]
-      },
-      edge: {
-        name: "Edg",
-        prefixes: ["Mozilla/5.0"],
-        os: ["Windows NT 10.0; Win64; x64"],
-        engine: "AppleWebKit/537.36 (KHTML, like Gecko)",
-        versionRange: [100, 130]
-      }
-    };
+    function updateOptions() {
+      const os = document.getElementById('os').value;
+      document.getElementById('desktop-options').style.display = os === 'desktop' ? 'block' : 'none';
+      document.getElementById('android-options').style.display = os === 'android' ? 'block' : 'none';
+      document.getElementById('ios-options').style.display = os === 'ios' ? 'block' : 'none';
+    }
 
-    function getRandomItem(arr) {
+    function randomItem(arr) {
       return arr[Math.floor(Math.random() * arr.length)];
     }
 
-    function generateUA() {
-      const selected = [];
-      if (document.getElementById('chrome').checked) selected.push('chrome');
-      if (document.getElementById('firefox').checked) selected.push('firefox');
-      if (document.getElementById('safari').checked) selected.push('safari');
-      if (document.getElementById('edge').checked) selected.push('edge');
+    function generateUAs() {
+      const os = document.getElementById('os').value;
+      const count = parseInt(document.getElementById('count').value) || 5;
+      let uas = [];
 
-      if (selected.length === 0) {
-        alert("Please select at least one browser!");
-        return;
+      for (let i = 0; i < count; i++) {
+        let ua = '';
+
+        if (os === 'android') {
+          const ver = document.getElementById('android-ver').value;
+          const chromeVer = document.getElementById('chrome-ver').value;
+          const device = randomItem(['SM-G998B', 'Pixel 8', 'SM-S918B', 'Pixel 9 Pro']);
+          ua = `Mozilla/5.0 (Linux; Android ${ver}; ${device}) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/${chromeVer} Mobile Safari/537.36`;
+        }
+        else if (os === 'ios') {
+          const ver = document.getElementById('ios-ver').value;
+          ua = `Mozilla/5.0 (iPhone; CPU iPhone OS ${ver.replace(/\./g, '_')} like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/${ver} Mobile/15E148 Safari/604.1`;
+        }
+        else { // desktop
+          const browser = document.getElementById('browser').value;
+          const macVer = document.getElementById('mac-version').value;
+
+          if (browser === 'chrome') {
+            ua = `Mozilla/5.0 (${macVer.includes('11') ? 'Macintosh; Apple Silicon' : 'Macintosh; Intel Mac OS X 10_15_7'}) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/149.0.0.0 Safari/537.36`;
+          }
+          else if (browser === 'safari') {
+            ua = `Mozilla/5.0 (Macintosh; ${macVer.includes('11') ? 'Apple Silicon' : 'Intel Mac OS X 10_15_7'}) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/26.0 Safari/605.1.15`;
+          }
+          else if (browser === 'firefox') {
+            ua = `Mozilla/5.0 (Macintosh; ${macVer.includes('11') ? 'Apple Silicon' : 'Intel Mac OS X 10.15'}) Gecko/20100101 Firefox/130.0`;
+          }
+          else if (browser === 'edge') {
+            ua = `Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/149.0.0.0 Safari/537.36 Edg/149.0.0.0`;
+          }
+        }
+        uas.push(ua);
       }
 
-      const browserKey = getRandomItem(selected);
-      const browser = browsers[browserKey];
-
-      const os = getRandomItem(browser.os);
-      const version = Math.floor(Math.random() * (browser.versionRange[1] - browser.versionRange[0] + 1)) + browser.versionRange[0];
-
-      let ua = `${browser.prefixes[0]} (${os}) ${browser.engine} ${browser.name}/${version}.0`;
-
-      if (browserKey === 'edge') {
-        ua = `${browser.prefixes[0]} (${os}) ${browser.engine} Chrome/${version}.0.0.0 Safari/537.36 Edg/${version}.0.0.0`;
-      }
-
-      document.getElementById('ua-display').textContent = ua;
+      document.getElementById('ua-list').textContent = uas.join('\n\n');
     }
 
-    function copyToClipboard() {
-      const text = document.getElementById('ua-display').textContent;
-      if (text === "Click the button to generate a User Agent") return;
-
+    function copyAll() {
+      const text = document.getElementById('ua-list').textContent;
+      if (!text) return;
       navigator.clipboard.writeText(text).then(() => {
-        const orig = event.target.textContent;
-        event.target.textContent = "✅ Copied!";
-        setTimeout(() => event.target.textContent = orig, 2000);
+        alert('✅ All User Agents copied to clipboard!');
       });
     }
 
-    // Generate one on load
-    window.onload = generateUA;
+    // Initial generation
+    window.onload = () => {
+      updateOptions();
+      generateUAs();
+    };
   </script>
 </body>
 </html>
