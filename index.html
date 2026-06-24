@@ -1,0 +1,191 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Random User Agent Generator</title>
+  <style>
+    body {
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      background: linear-gradient(135deg, #667eea, #764ba2);
+      color: white;
+      margin: 0;
+      padding: 20px;
+      min-height: 100vh;
+    }
+    .container {
+      max-width: 800px;
+      margin: 40px auto;
+      background: rgba(255,255,255,0.1);
+      padding: 30px;
+      border-radius: 16px;
+      backdrop-filter: blur(10px);
+      box-shadow: 0 10px 30px rgba(0,0,0,0.3);
+    }
+    h1 { text-align: center; margin-bottom: 10px; }
+    p { text-align: center; opacity: 0.9; }
+    .generator {
+      margin: 30px 0;
+      text-align: center;
+    }
+    button {
+      background: #fff;
+      color: #667eea;
+      border: none;
+      padding: 14px 32px;
+      font-size: 18px;
+      font-weight: bold;
+      border-radius: 50px;
+      cursor: pointer;
+      transition: all 0.3s;
+    }
+    button:hover {
+      transform: translateY(-3px);
+      box-shadow: 0 10px 20px rgba(0,0,0,0.2);
+    }
+    .ua-box {
+      background: rgba(0,0,0,0.3);
+      padding: 20px;
+      border-radius: 12px;
+      margin: 20px 0;
+      word-break: break-all;
+      font-family: monospace;
+      font-size: 15px;
+      min-height: 80px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      text-align: center;
+    }
+    .options {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 15px;
+      justify-content: center;
+      margin: 20px 0;
+    }
+    label {
+      background: rgba(255,255,255,0.2);
+      padding: 8px 16px;
+      border-radius: 30px;
+      cursor: pointer;
+    }
+    .copy-btn {
+      margin-top: 10px;
+      padding: 10px 20px;
+      font-size: 14px;
+    }
+    footer {
+      text-align: center;
+      margin-top: 40px;
+      opacity: 0.8;
+      font-size: 14px;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h1>🎲 Random User Agent Generator</h1>
+    <p>Generate realistic browser User Agents instantly</p>
+
+    <div class="options">
+      <label><input type="checkbox" id="chrome" checked> Chrome</label>
+      <label><input type="checkbox" id="firefox" checked> Firefox</label>
+      <label><input type="checkbox" id="safari" checked> Safari</label>
+      <label><input type="checkbox" id="edge" checked> Edge</label>
+    </div>
+
+    <div class="generator">
+      <button onclick="generateUA()">Generate New User Agent</button>
+    </div>
+
+    <div class="ua-box" id="ua-display">
+      Click the button to generate a User Agent
+    </div>
+
+    <button class="copy-btn" onclick="copyToClipboard()">📋 Copy to Clipboard</button>
+  </div>
+
+  <footer>
+    Hosted on GitHub Pages • Made with ❤️
+  </footer>
+
+  <script>
+    const browsers = {
+      chrome: {
+        name: "Chrome",
+        prefixes: ["Mozilla/5.0"],
+        os: ["Windows NT 10.0; Win64; x64", "Macintosh; Intel Mac OS X 10_15_7", "X11; Linux x86_64"],
+        engine: "AppleWebKit/537.36 (KHTML, like Gecko)",
+        versionRange: [100, 130]
+      },
+      firefox: {
+        name: "Firefox",
+        prefixes: ["Mozilla/5.0"],
+        os: ["Windows NT 10.0; Win64; x64", "Macintosh; Intel Mac OS X 10.15", "X11; Linux x86_64"],
+        engine: "Gecko/20100101",
+        versionRange: [90, 130]
+      },
+      safari: {
+        name: "Safari",
+        prefixes: ["Mozilla/5.0"],
+        os: ["Macintosh; Intel Mac OS X 10_15_7"],
+        engine: "AppleWebKit/605.1.15 (KHTML, like Gecko)",
+        versionRange: [15, 18]
+      },
+      edge: {
+        name: "Edg",
+        prefixes: ["Mozilla/5.0"],
+        os: ["Windows NT 10.0; Win64; x64"],
+        engine: "AppleWebKit/537.36 (KHTML, like Gecko)",
+        versionRange: [100, 130]
+      }
+    };
+
+    function getRandomItem(arr) {
+      return arr[Math.floor(Math.random() * arr.length)];
+    }
+
+    function generateUA() {
+      const selected = [];
+      if (document.getElementById('chrome').checked) selected.push('chrome');
+      if (document.getElementById('firefox').checked) selected.push('firefox');
+      if (document.getElementById('safari').checked) selected.push('safari');
+      if (document.getElementById('edge').checked) selected.push('edge');
+
+      if (selected.length === 0) {
+        alert("Please select at least one browser!");
+        return;
+      }
+
+      const browserKey = getRandomItem(selected);
+      const browser = browsers[browserKey];
+
+      const os = getRandomItem(browser.os);
+      const version = Math.floor(Math.random() * (browser.versionRange[1] - browser.versionRange[0] + 1)) + browser.versionRange[0];
+
+      let ua = `${browser.prefixes[0]} (${os}) ${browser.engine} ${browser.name}/${version}.0`;
+
+      if (browserKey === 'edge') {
+        ua = `${browser.prefixes[0]} (${os}) ${browser.engine} Chrome/${version}.0.0.0 Safari/537.36 Edg/${version}.0.0.0`;
+      }
+
+      document.getElementById('ua-display').textContent = ua;
+    }
+
+    function copyToClipboard() {
+      const text = document.getElementById('ua-display').textContent;
+      if (text === "Click the button to generate a User Agent") return;
+
+      navigator.clipboard.writeText(text).then(() => {
+        const orig = event.target.textContent;
+        event.target.textContent = "✅ Copied!";
+        setTimeout(() => event.target.textContent = orig, 2000);
+      });
+    }
+
+    // Generate one on load
+    window.onload = generateUA;
+  </script>
+</body>
+</html>
