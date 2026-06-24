@@ -12,67 +12,87 @@
     select, input, button { padding:10px; border-radius:8px; border:none; width:100%; margin-bottom:10px; }
     button { background:#fff; color:#667eea; font-weight:bold; cursor:pointer; font-size:16px; }
     button:hover { transform:scale(1.03); }
-    .ua-list { background:rgba(0,0,0,0.3); padding:15px; border-radius:12px; max-height:450px; overflow-y:auto; font-family:monospace; font-size:14px; white-space:pre-wrap; }
+    .options-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 15px; }
+    .ua-list { background:rgba(0,0,0,0.3); padding:15px; border-radius:12px; max-height:500px; overflow-y:auto; font-family:monospace; font-size:14px; white-space:pre-wrap; }
+    .checkbox-group { display: flex; flex-wrap: wrap; gap: 12px; }
+    .checkbox-group label { background: rgba(255,255,255,0.2); padding: 6px 12px; border-radius: 20px; cursor: pointer; }
   </style>
 </head>
 <body>
   <div class="container">
     <h1>🎲 Advanced User Agent Generator</h1>
 
-    <label>Operating System</label>
-    <select id="os" onchange="updateOptions()">
-      <option value="desktop">Desktop</option>
-      <option value="android" selected>Android</option>
-      <option value="ios">iPhone / iOS</option>
+    <label>Mode</label>
+    <select id="mode" onchange="updateUI()">
+      <option value="specific">Specific OS / Versions</option>
+      <option value="random">Completely Random (All OS mixed)</option>
     </select>
 
-    <div id="android-options">
-      <label>Android Version</label>
-      <select id="android-ver">
-        <option value="13">13</option>
-        <option value="14">14</option>
-        <option value="15">15</option>
-        <option value="16">16</option>
+    <div id="specific-options">
+      <label>Operating System</label>
+      <select id="os" onchange="updateOptions()">
+        <option value="desktop">Desktop</option>
+        <option value="android" selected>Android</option>
+        <option value="ios">iPhone / iOS</option>
       </select>
 
-      <label>Device Model (Random from real list)</label>
-      <select id="android-model"></select>
+      <div id="android-options" class="options-grid">
+        <div>
+          <label>Android Versions (Multi-select)</label>
+          <div class="checkbox-group" id="android-vers"></div>
+        </div>
+        <div>
+          <label>Chrome Version</label>
+          <select id="chrome-ver"></select>
+        </div>
+      </div>
 
-      <label>Chrome Version</label>
-      <select id="chrome-ver"></select>
-    </div>
+      <div id="ios-options" style="display:none;">
+        <label>iOS Versions (Multi-select)</label>
+        <div class="checkbox-group" id="ios-vers"></div>
+      </div>
 
-    <div id="ios-options" style="display:none;">
-      <label>iOS / Safari Version</label>
-      <select id="ios-ver"></select>
-    </div>
-
-    <div id="desktop-options" style="display:none;">
-      <label>Browser</label>
-      <select id="browser">
-        <option value="chrome">Chrome</option>
-        <option value="firefox">Firefox</option>
-        <option value="safari">Safari (macOS)</option>
-        <option value="edge">Edge</option>
-      </select>
-      <label>macOS Version (M-series support)</label>
-      <select id="mac-version">
-        <option value="11_0">macOS 11+ Apple Silicon (M1/M2/M3/M4)</option>
-        <option value="10_15_7">macOS 10.15.7</option>
-      </select>
+      <div id="desktop-options" style="display:none;">
+        <label>Browser</label>
+        <select id="browser">
+          <option value="chrome">Chrome</option>
+          <option value="firefox">Firefox</option>
+          <option value="safari">Safari (macOS)</option>
+          <option value="edge">Edge</option>
+        </select>
+        <label>macOS (M-series)</label>
+        <select id="mac-version">
+          <option value="11_0">Apple Silicon (M1/M2/M3/M4)</option>
+          <option value="10_15_7">Intel macOS</option>
+        </select>
+      </div>
     </div>
 
     <label>Number of User Agents</label>
-    <input type="number" id="count" value="10" min="1" max="100">
+    <input type="number" id="count" value="15" min="1" max="200">
 
-    <button onclick="generateUAs()">Generate User Agents</button>
+    <button onclick="generateUAs()">🚀 Generate User Agents</button>
 
-    <div class="ua-list" id="ua-list">UAs will appear here...</div>
-    <button onclick="copyAll()" style="margin-top:15px;">📋 Copy All</button>
+    <div class="ua-list" id="ua-list">Generated User Agents will appear here...</div>
+    <button onclick="copyAll()" style="margin-top:15px; width:100%;">📋 Copy All to Clipboard</button>
   </div>
 
   <script type="module">
-    import { androidDevices, chromeVersions, iosVersions } from './ua-data.js';
+    import { androidDevices, chromeVersions, androidVersions, iosVersions } from './ua-data.js';
+
+    function randomItem(arr) {
+      return arr[Math.floor(Math.random() * arr.length)];
+    }
+
+    function populateCheckboxes(containerId, values, defaultChecked = true) {
+      const container = document.getElementById(containerId);
+      container.innerHTML = '';
+      values.forEach(v => {
+        const label = document.createElement('label');
+        label.innerHTML = `<input type="checkbox" value="${v}" ${defaultChecked ? 'checked' : ''}> ${v}`;
+        container.appendChild(label);
+      });
+    }
 
     function populateSelect(id, items) {
       const select = document.getElementById(id);
@@ -85,46 +105,80 @@
       });
     }
 
-    function randomItem(arr) {
-      return arr[Math.floor(Math.random() * arr.length)];
+    function getSelectedValues(containerId) {
+      return Array.from(document.querySelectorAll(`#${containerId} input:checked`)).map(cb => cb.value);
+    }
+
+    function updateUI() {
+      const isRandom = document.getElementById('mode').value === 'random';
+      document.getElementById('specific-options').style.display = isRandom ? 'none' : 'block';
     }
 
     function updateOptions() {
       const os = document.getElementById('os').value;
-      document.getElementById('android-options').style.display = os === 'android' ? 'block' : 'none';
+      document.getElementById('android-options').style.display = os === 'android' ? 'grid' : 'none';
       document.getElementById('ios-options').style.display = os === 'ios' ? 'block' : 'none';
       document.getElementById('desktop-options').style.display = os === 'desktop' ? 'block' : 'none';
     }
 
     function generateUAs() {
-      const os = document.getElementById('os').value;
-      const count = parseInt(document.getElementById('count').value) || 5;
+      const mode = document.getElementById('mode').value;
+      const count = parseInt(document.getElementById('count').value) || 10;
       let uas = [];
 
       for (let i = 0; i < count; i++) {
         let ua = '';
 
-        if (os === 'android') {
-          const ver = document.getElementById('android-ver').value;
-          const model = document.getElementById('android-model').value || randomItem(androidDevices);
-          const chromeVer = document.getElementById('chrome-ver').value || randomItem(chromeVersions);
-          ua = `Mozilla/5.0 (Linux; Android ${ver}; ${model}) AppleWebKit/537.36 (KHTML, like Gecko) Version/4.0 Chrome/${chromeVer} Mobile Safari/537.36`;
-        }
-        else if (os === 'ios') {
-          const ver = document.getElementById('ios-ver').value;
-          ua = `Mozilla/5.0 (iPhone; CPU iPhone OS ${ver.replace(/\./g, '_')} like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/${ver} Mobile/15E148 Safari/604.1`;
-        }
-        else { // desktop
-          const browser = document.getElementById('browser').value;
-          const isM = document.getElementById('mac-version').value.includes('11');
-          if (browser === 'chrome') {
-            ua = `Mozilla/5.0 (${isM ? 'Macintosh; Apple Silicon' : 'Macintosh; Intel Mac OS X 10_15_7'}) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/149.0.0.0 Safari/537.36`;
-          } else if (browser === 'safari') {
-            ua = `Mozilla/5.0 (Macintosh; ${isM ? 'Apple Silicon' : 'Intel Mac OS X 10_15_7'}) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/26.0 Safari/605.1.15`;
-          } else if (browser === 'firefox') {
-            ua = `Mozilla/5.0 (Macintosh; ${isM ? 'Apple Silicon' : 'Intel Mac OS X 10.15'}) Gecko/20100101 Firefox/130.0`;
-          } else if (browser === 'edge') {
-            ua = `Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/149.0.0.0 Safari/537.36 Edg/149.0.0.0`;
+        if (mode === 'random') {
+          // Completely random across everything
+          const rand = Math.random();
+          if (rand < 0.4) {
+            // Android
+            const ver = randomItem(androidVersions);
+            const model = randomItem(androidDevices);
+            const chVer = randomItem(chromeVersions);
+            ua = `Mozilla/5.0 (Linux; Android ${ver}; ${model}) AppleWebKit/537.36 (KHTML, like Gecko) Version/4.0 Chrome/${chVer} Mobile Safari/537.36`;
+          } else if (rand < 0.7) {
+            // iOS
+            const ver = randomItem(iosVersions);
+            ua = `Mozilla/5.0 (iPhone; CPU iPhone OS ${ver.replace(/\./g, '_')} like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/${ver} Mobile/15E148 Safari/604.1`;
+          } else {
+            // Desktop
+            const isM = Math.random() > 0.5;
+            if (Math.random() > 0.5) {
+              ua = `Mozilla/5.0 (${isM ? 'Macintosh; Apple Silicon' : 'Macintosh; Intel Mac OS X 10_15_7'}) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/149.0.0.0 Safari/537.36`;
+            } else {
+              ua = `Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/149.0.0.0 Safari/537.36 Edg/149.0.0.0`;
+            }
+          }
+        } 
+        else {
+          // Specific mode
+          const os = document.getElementById('os').value;
+          if (os === 'android') {
+            const selectedVers = getSelectedValues('android-vers');
+            const ver = selectedVers.length ? randomItem(selectedVers) : randomItem(androidVersions);
+            const model = randomItem(androidDevices);
+            const chromeVer = document.getElementById('chrome-ver').value || randomItem(chromeVersions);
+            ua = `Mozilla/5.0 (Linux; Android ${ver}; ${model}) AppleWebKit/537.36 (KHTML, like Gecko) Version/4.0 Chrome/${chromeVer} Mobile Safari/537.36`;
+          }
+          else if (os === 'ios') {
+            const selectedVers = getSelectedValues('ios-vers');
+            const ver = selectedVers.length ? randomItem(selectedVers) : randomItem(iosVersions);
+            ua = `Mozilla/5.0 (iPhone; CPU iPhone OS ${ver.replace(/\./g, '_')} like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/${ver} Mobile/15E148 Safari/604.1`;
+          }
+          else { // desktop
+            const browser = document.getElementById('browser').value;
+            const isM = document.getElementById('mac-version').value.includes('11');
+            if (browser === 'chrome') {
+              ua = `Mozilla/5.0 (${isM ? 'Macintosh; Apple Silicon' : 'Macintosh; Intel Mac OS X 10_15_7'}) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/149.0.0.0 Safari/537.36`;
+            } else if (browser === 'safari') {
+              ua = `Mozilla/5.0 (Macintosh; ${isM ? 'Apple Silicon' : 'Intel Mac OS X 10_15_7'}) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/26.0 Safari/605.1.15`;
+            } else if (browser === 'firefox') {
+              ua = `Mozilla/5.0 (Macintosh; ${isM ? 'Apple Silicon' : 'Intel Mac OS X 10.15'}) Gecko/20100101 Firefox/130.0`;
+            } else if (browser === 'edge') {
+              ua = `Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/149.0.0.0 Safari/537.36 Edg/149.0.0.0`;
+            }
           }
         }
         uas.push(ua);
@@ -135,14 +189,15 @@
 
     function copyAll() {
       const text = document.getElementById('ua-list').textContent;
-      if (text) navigator.clipboard.writeText(text).then(() => alert('✅ Copied!'));
+      if (text) navigator.clipboard.writeText(text).then(() => alert('✅ All User Agents copied!'));
     }
 
     // Initialize
     window.onload = () => {
-      populateSelect('android-model', androidDevices);
+      populateCheckboxes('android-vers', androidVersions);
+      populateCheckboxes('ios-vers', iosVersions);
       populateSelect('chrome-ver', chromeVersions);
-      populateSelect('ios-ver', iosVersions);
+      updateUI();
       updateOptions();
       generateUAs();
     };
