@@ -1,4 +1,4 @@
-// ua-data.js - Device data for User Agent Generator
+// ua-data.js
 const androidDevices = [
   "SM-G998B", "SM-S928B", "SM-S918B", "SM-S931B", "SM-A715F", 
   "SM-G996U", "SM-S146VL", "SM-F956N", "Pixel 8", "Pixel 9 Pro",
@@ -8,16 +8,14 @@ const androidDevices = [
 ];
 
 const chromeVersions = [
-  "149.0.7827.116",
-  "148.0.7778.167",
-  "147.0.7727.24",
-  "149.0.7827.150",
-  "148.0.7778.215",
-  "148.0.7778.178"
+  "149.0.7827.116", "148.0.7778.167", "147.0.7727.24",
+  "149.0.7827.150", "148.0.7778.215"
 ];
+
+const androidVersions = ["13", "14", "15", "16"];
 
 const iosVersions = [
   "26.5.1", "26.5", "26.4.1", "26.4", "26.3", "26.2", "26.1", "26.0"
 ];
 
-export { androidDevices, chromeVersions, iosVersions };
+export { androidDevices, chromeVersions, androidVersions, iosVersions };
