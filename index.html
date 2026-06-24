@@ -1,4 +1,83 @@
-<script type="module">
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Advanced User Agent Generator</title>
+  <style>
+    body { font-family: 'Segoe UI', sans-serif; background: linear-gradient(135deg, #667eea, #764ba2); color: white; margin:0; padding:20px; min-height:100vh; }
+    .container { max-width: 900px; margin:40px auto; background:rgba(255,255,255,0.1); padding:30px; border-radius:16px; backdrop-filter:blur(10px); box-shadow:0 10px 30px rgba(0,0,0,0.3); }
+    h1 { text-align:center; }
+    label { display:block; margin:12px 0 6px; font-weight:bold; }
+    select, input, button { padding:10px; border-radius:8px; border:none; width:100%; margin-bottom:10px; }
+    button { background:#fff; color:#667eea; font-weight:bold; cursor:pointer; font-size:16px; }
+    button:hover { transform:scale(1.03); }
+    .options-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 15px; }
+    .ua-list { background:rgba(0,0,0,0.3); padding:15px; border-radius:12px; max-height:500px; overflow-y:auto; font-family:monospace; font-size:14px; white-space:pre-wrap; }
+    .checkbox-group { display: flex; flex-wrap: wrap; gap: 12px; }
+    .checkbox-group label { background: rgba(255,255,255,0.2); padding: 6px 12px; border-radius: 20px; cursor: pointer; }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h1>🎲 Advanced User Agent Generator</h1>
+
+    <label>Mode</label>
+    <select id="mode" onchange="updateUI()">
+      <option value="specific">Specific OS / Versions</option>
+      <option value="random">Completely Random (All OS mixed)</option>
+    </select>
+
+    <div id="specific-options">
+      <label>Operating System</label>
+      <select id="os" onchange="updateOptions()">
+        <option value="desktop">Desktop</option>
+        <option value="android" selected>Android</option>
+        <option value="ios">iPhone / iOS</option>
+      </select>
+
+      <div id="android-options" class="options-grid">
+        <div>
+          <label>Android Versions (Multi-select)</label>
+          <div class="checkbox-group" id="android-vers"></div>
+        </div>
+        <div>
+          <label>Chrome Version</label>
+          <select id="chrome-ver"></select>
+        </div>
+      </div>
+
+      <div id="ios-options" style="display:none;">
+        <label>iOS Versions (Multi-select)</label>
+        <div class="checkbox-group" id="ios-vers"></div>
+      </div>
+
+      <div id="desktop-options" style="display:none;">
+        <label>Browser</label>
+        <select id="browser">
+          <option value="chrome">Chrome</option>
+          <option value="firefox">Firefox</option>
+          <option value="safari">Safari (macOS)</option>
+          <option value="edge">Edge</option>
+        </select>
+        <label>macOS (M-series)</label>
+        <select id="mac-version">
+          <option value="11_0">Apple Silicon (M1/M2/M3/M4)</option>
+          <option value="10_15_7">Intel macOS</option>
+        </select>
+      </div>
+    </div>
+
+    <label>Number of User Agents</label>
+    <input type="number" id="count" value="15" min="1" max="200">
+
+    <button onclick="generateUAs()">🚀 Generate User Agents</button>
+
+    <div class="ua-list" id="ua-list">Generated User Agents will appear here...</div>
+    <button onclick="copyAll()" style="margin-top:15px; width:100%;">📋 Copy All to Clipboard</button>
+  </div>
+
+  <script type="module">
     import { androidDevices, chromeVersions, androidVersions, iosVersions } from './ua-data.js';
 
     function randomItem(arr) {
@@ -51,16 +130,20 @@
         let ua = '';
 
         if (mode === 'random') {
+          // Completely random across everything
           const rand = Math.random();
           if (rand < 0.4) {
+            // Android
             const ver = randomItem(androidVersions);
             const model = randomItem(androidDevices);
             const chVer = randomItem(chromeVersions);
             ua = `Mozilla/5.0 (Linux; Android ${ver}; ${model}) AppleWebKit/537.36 (KHTML, like Gecko) Version/4.0 Chrome/${chVer} Mobile Safari/537.36`;
           } else if (rand < 0.7) {
+            // iOS
             const ver = randomItem(iosVersions);
             ua = `Mozilla/5.0 (iPhone; CPU iPhone OS ${ver.replace(/\./g, '_')} like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/${ver} Mobile/15E148 Safari/604.1`;
           } else {
+            // Desktop
             const isM = Math.random() > 0.5;
             if (Math.random() > 0.5) {
               ua = `Mozilla/5.0 (${isM ? 'Macintosh; Apple Silicon' : 'Macintosh; Intel Mac OS X 10_15_7'}) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/149.0.0.0 Safari/537.36`;
@@ -70,6 +153,7 @@
           }
         } 
         else {
+          // Specific mode
           const os = document.getElementById('os').value;
           if (os === 'android') {
             const selectedVers = getSelectedValues('android-vers');
@@ -83,7 +167,7 @@
             const ver = selectedVers.length ? randomItem(selectedVers) : randomItem(iosVersions);
             ua = `Mozilla/5.0 (iPhone; CPU iPhone OS ${ver.replace(/\./g, '_')} like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/${ver} Mobile/15E148 Safari/604.1`;
           }
-          else {
+          else { // desktop
             const browser = document.getElementById('browser').value;
             const isM = document.getElementById('mac-version').value.includes('11');
             if (browser === 'chrome') {
@@ -108,19 +192,15 @@
       if (text) navigator.clipboard.writeText(text).then(() => alert('✅ All User Agents copied!'));
     }
 
-    // EXPOSE FUNCTIONS TO WINDOW (Fixes the button inline onclick issue)
-    window.updateUI = updateUI;
-    window.updateOptions = updateOptions;
-    window.generateUAs = generateUAs;
-    window.copyAll = copyAll;
-
     // Initialize
-    window.addEventListener('DOMContentLoaded', () => {
+    window.onload = () => {
       populateCheckboxes('android-vers', androidVersions);
       populateCheckboxes('ios-vers', iosVersions);
       populateSelect('chrome-ver', chromeVersions);
       updateUI();
       updateOptions();
       generateUAs();
-    });
+    };
   </script>
+</body>
+</html>
