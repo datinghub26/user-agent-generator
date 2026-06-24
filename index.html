@@ -5,51 +5,14 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Advanced User Agent Generator</title>
   <style>
-    body {
-      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-      background: linear-gradient(135deg, #667eea, #764ba2);
-      color: white;
-      margin: 0;
-      padding: 20px;
-      min-height: 100vh;
-    }
-    .container {
-      max-width: 900px;
-      margin: 40px auto;
-      background: rgba(255,255,255,0.1);
-      padding: 30px;
-      border-radius: 16px;
-      backdrop-filter: blur(10px);
-      box-shadow: 0 10px 30px rgba(0,0,0,0.3);
-    }
-    h1 { text-align: center; }
-    label { display: block; margin: 12px 0 6px; font-weight: bold; }
-    select, input, button {
-      padding: 10px;
-      border-radius: 8px;
-      border: none;
-      width: 100%;
-      margin-bottom: 10px;
-    }
-    button {
-      background: #fff;
-      color: #667eea;
-      font-weight: bold;
-      cursor: pointer;
-      font-size: 16px;
-    }
-    button:hover { transform: scale(1.03); }
-    .ua-list {
-      background: rgba(0,0,0,0.3);
-      padding: 15px;
-      border-radius: 12px;
-      max-height: 400px;
-      overflow-y: auto;
-      font-family: monospace;
-      font-size: 14px;
-      white-space: pre-wrap;
-    }
-    .copy-all { margin-top: 15px; }
+    body { font-family: 'Segoe UI', sans-serif; background: linear-gradient(135deg, #667eea, #764ba2); color: white; margin:0; padding:20px; min-height:100vh; }
+    .container { max-width: 900px; margin:40px auto; background:rgba(255,255,255,0.1); padding:30px; border-radius:16px; backdrop-filter:blur(10px); box-shadow:0 10px 30px rgba(0,0,0,0.3); }
+    h1 { text-align:center; }
+    label { display:block; margin:12px 0 6px; font-weight:bold; }
+    select, input, button { padding:10px; border-radius:8px; border:none; width:100%; margin-bottom:10px; }
+    button { background:#fff; color:#667eea; font-weight:bold; cursor:pointer; font-size:16px; }
+    button:hover { transform:scale(1.03); }
+    .ua-list { background:rgba(0,0,0,0.3); padding:15px; border-radius:12px; max-height:450px; overflow-y:auto; font-family:monospace; font-size:14px; white-space:pre-wrap; }
   </style>
 </head>
 <body>
@@ -58,12 +21,33 @@
 
     <label>Operating System</label>
     <select id="os" onchange="updateOptions()">
-      <option value="desktop">Desktop (Windows/macOS/Linux)</option>
-      <option value="android">Android</option>
+      <option value="desktop">Desktop</option>
+      <option value="android" selected>Android</option>
       <option value="ios">iPhone / iOS</option>
     </select>
 
-    <div id="desktop-options">
+    <div id="android-options">
+      <label>Android Version</label>
+      <select id="android-ver">
+        <option value="13">13</option>
+        <option value="14">14</option>
+        <option value="15">15</option>
+        <option value="16">16</option>
+      </select>
+
+      <label>Device Model (Random from real list)</label>
+      <select id="android-model"></select>
+
+      <label>Chrome Version</label>
+      <select id="chrome-ver"></select>
+    </div>
+
+    <div id="ios-options" style="display:none;">
+      <label>iOS / Safari Version</label>
+      <select id="ios-ver"></select>
+    </div>
+
+    <div id="desktop-options" style="display:none;">
       <label>Browser</label>
       <select id="browser">
         <option value="chrome">Chrome</option>
@@ -71,62 +55,45 @@
         <option value="safari">Safari (macOS)</option>
         <option value="edge">Edge</option>
       </select>
-      <label>macOS Apple Silicon (M-series)</label>
+      <label>macOS Version (M-series support)</label>
       <select id="mac-version">
-        <option value="10_15_7">macOS 10.15.7 (Intel-like)</option>
-        <option value="11_0">macOS 11+ (M1/M2/M3/M4)</option>
+        <option value="11_0">macOS 11+ Apple Silicon (M1/M2/M3/M4)</option>
+        <option value="10_15_7">macOS 10.15.7</option>
       </select>
     </div>
 
-    <div id="android-options" style="display:none;">
-      <label>Android Version</label>
-      <select id="android-ver">
-        <option value="13">Android 13</option>
-        <option value="14">Android 14</option>
-        <option value="15">Android 15</option>
-        <option value="16">Android 16</option>
-      </select>
-      <label>Chrome Version</label>
-      <select id="chrome-ver">
-        <option value="149.0.7827.116">149.0.7827.116</option>
-        <option value="148.0.7778.167">148.0.7778.167</option>
-        <option value="147.0.7727.24">147.0.7727.24</option>
-      </select>
-    </div>
-
-    <div id="ios-options" style="display:none;">
-      <label>iOS / Safari Version</label>
-      <select id="ios-ver">
-        <option value="26.5.1">iOS 26.5.1 Safari 26.5.1</option>
-        <option value="26.5">iOS 26.5 Safari 26.5</option>
-        <option value="26.4.1">iOS 26.4.1 Safari 26.4.1</option>
-        <option value="26.4">iOS 26.4 Safari 26.4</option>
-        <option value="26.3">iOS 26.3 Safari 26.3</option>
-        <option value="26.2">iOS 26.2 Safari 26.2</option>
-        <option value="26.1">iOS 26.1 Safari 26.1</option>
-        <option value="26.0">iOS 26.0 Safari 26.0</option>
-      </select>
-    </div>
-
-    <label>Number of User Agents to Generate</label>
-    <input type="number" id="count" value="5" min="1" max="50">
+    <label>Number of User Agents</label>
+    <input type="number" id="count" value="10" min="1" max="100">
 
     <button onclick="generateUAs()">Generate User Agents</button>
 
-    <div class="ua-list" id="ua-list">Generated UAs will appear here...</div>
-    <button class="copy-all" onclick="copyAll()">📋 Copy All</button>
+    <div class="ua-list" id="ua-list">UAs will appear here...</div>
+    <button onclick="copyAll()" style="margin-top:15px;">📋 Copy All</button>
   </div>
 
-  <script>
-    function updateOptions() {
-      const os = document.getElementById('os').value;
-      document.getElementById('desktop-options').style.display = os === 'desktop' ? 'block' : 'none';
-      document.getElementById('android-options').style.display = os === 'android' ? 'block' : 'none';
-      document.getElementById('ios-options').style.display = os === 'ios' ? 'block' : 'none';
+  <script type="module">
+    import { androidDevices, chromeVersions, iosVersions } from './ua-data.js';
+
+    function populateSelect(id, items) {
+      const select = document.getElementById(id);
+      select.innerHTML = '';
+      items.forEach(item => {
+        const opt = document.createElement('option');
+        opt.value = item;
+        opt.textContent = item;
+        select.appendChild(opt);
+      });
     }
 
     function randomItem(arr) {
       return arr[Math.floor(Math.random() * arr.length)];
+    }
+
+    function updateOptions() {
+      const os = document.getElementById('os').value;
+      document.getElementById('android-options').style.display = os === 'android' ? 'block' : 'none';
+      document.getElementById('ios-options').style.display = os === 'ios' ? 'block' : 'none';
+      document.getElementById('desktop-options').style.display = os === 'desktop' ? 'block' : 'none';
     }
 
     function generateUAs() {
@@ -139,9 +106,9 @@
 
         if (os === 'android') {
           const ver = document.getElementById('android-ver').value;
-          const chromeVer = document.getElementById('chrome-ver').value;
-          const device = randomItem(['SM-G998B', 'Pixel 8', 'SM-S918B', 'Pixel 9 Pro']);
-          ua = `Mozilla/5.0 (Linux; Android ${ver}; ${device}) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/${chromeVer} Mobile Safari/537.36`;
+          const model = document.getElementById('android-model').value || randomItem(androidDevices);
+          const chromeVer = document.getElementById('chrome-ver').value || randomItem(chromeVersions);
+          ua = `Mozilla/5.0 (Linux; Android ${ver}; ${model}) AppleWebKit/537.36 (KHTML, like Gecko) Version/4.0 Chrome/${chromeVer} Mobile Safari/537.36`;
         }
         else if (os === 'ios') {
           const ver = document.getElementById('ios-ver').value;
@@ -149,18 +116,14 @@
         }
         else { // desktop
           const browser = document.getElementById('browser').value;
-          const macVer = document.getElementById('mac-version').value;
-
+          const isM = document.getElementById('mac-version').value.includes('11');
           if (browser === 'chrome') {
-            ua = `Mozilla/5.0 (${macVer.includes('11') ? 'Macintosh; Apple Silicon' : 'Macintosh; Intel Mac OS X 10_15_7'}) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/149.0.0.0 Safari/537.36`;
-          }
-          else if (browser === 'safari') {
-            ua = `Mozilla/5.0 (Macintosh; ${macVer.includes('11') ? 'Apple Silicon' : 'Intel Mac OS X 10_15_7'}) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/26.0 Safari/605.1.15`;
-          }
-          else if (browser === 'firefox') {
-            ua = `Mozilla/5.0 (Macintosh; ${macVer.includes('11') ? 'Apple Silicon' : 'Intel Mac OS X 10.15'}) Gecko/20100101 Firefox/130.0`;
-          }
-          else if (browser === 'edge') {
+            ua = `Mozilla/5.0 (${isM ? 'Macintosh; Apple Silicon' : 'Macintosh; Intel Mac OS X 10_15_7'}) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/149.0.0.0 Safari/537.36`;
+          } else if (browser === 'safari') {
+            ua = `Mozilla/5.0 (Macintosh; ${isM ? 'Apple Silicon' : 'Intel Mac OS X 10_15_7'}) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/26.0 Safari/605.1.15`;
+          } else if (browser === 'firefox') {
+            ua = `Mozilla/5.0 (Macintosh; ${isM ? 'Apple Silicon' : 'Intel Mac OS X 10.15'}) Gecko/20100101 Firefox/130.0`;
+          } else if (browser === 'edge') {
             ua = `Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/149.0.0.0 Safari/537.36 Edg/149.0.0.0`;
           }
         }
@@ -172,14 +135,14 @@
 
     function copyAll() {
       const text = document.getElementById('ua-list').textContent;
-      if (!text) return;
-      navigator.clipboard.writeText(text).then(() => {
-        alert('✅ All User Agents copied to clipboard!');
-      });
+      if (text) navigator.clipboard.writeText(text).then(() => alert('✅ Copied!'));
     }
 
-    // Initial generation
+    // Initialize
     window.onload = () => {
+      populateSelect('android-model', androidDevices);
+      populateSelect('chrome-ver', chromeVersions);
+      populateSelect('ios-ver', iosVersions);
       updateOptions();
       generateUAs();
     };
