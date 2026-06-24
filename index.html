@@ -192,14 +192,7 @@
       if (text) navigator.clipboard.writeText(text).then(() => alert('✅ All User Agents copied!'));
     }
 
-    
-// Expose functions to inline onclick handlers
-window.generateUAs = generateUAs;
-window.copyAll = copyAll;
-window.updateUI = updateUI;
-window.updateOptions = updateOptions;
-
-// Initialize
+    // Initialize
     window.onload = () => {
       populateCheckboxes('android-vers', androidVersions);
       populateCheckboxes('ios-vers', iosVersions);
