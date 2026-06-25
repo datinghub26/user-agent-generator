@@ -9,13 +9,13 @@
     .container { max-width: 900px; margin:40px auto; background:rgba(255,255,255,0.1); padding:30px; border-radius:16px; backdrop-filter:blur(10px); box-shadow:0 10px 30px rgba(0,0,0,0.3); }
     h1 { text-align:center; }
     label { display:block; margin:12px 0 6px; font-weight:bold; }
-    select, input, button { padding:10px; border-radius:8px; border:none; width:100%; margin-bottom:10px; }
-    button { background:#fff; color:#667eea; font-weight:bold; cursor:pointer; font-size:16px; }
+    select, input, button { padding:12px; border-radius:8px; border:none; width:100%; margin-bottom:12px; font-size:16px; }
+    button { background:#fff; color:#667eea; font-weight:bold; cursor:pointer; }
     button:hover { transform:scale(1.03); }
-    .options-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 15px; }
-    .ua-list { background:rgba(0,0,0,0.3); padding:15px; border-radius:12px; max-height:500px; overflow-y:auto; font-family:monospace; font-size:14px; white-space:pre-wrap; }
+    .options-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 15px; }
+    .ua-list { background:rgba(0,0,0,0.3); padding:20px; border-radius:12px; max-height:500px; overflow-y:auto; font-family:monospace; font-size:14px; white-space:pre-wrap; line-height:1.6; }
     .checkbox-group { display: flex; flex-wrap: wrap; gap: 12px; }
-    .checkbox-group label { background: rgba(255,255,255,0.2); padding: 6px 12px; border-radius: 20px; cursor: pointer; }
+    .checkbox-group label { background: rgba(255,255,255,0.2); padding: 8px 14px; border-radius: 20px; cursor: pointer; }
   </style>
 </head>
 <body>
@@ -73,23 +73,29 @@
 
     <button onclick="generateUAs()">🚀 Generate User Agents</button>
 
-    <div class="ua-list" id="ua-list">Generated User Agents will appear here...</div>
+    <div class="ua-list" id="ua-list">Click "Generate" to start...</div>
     <button onclick="copyAll()" style="margin-top:15px; width:100%;">📋 Copy All to Clipboard</button>
   </div>
 
-  <script type="module">
-    import { androidDevices, chromeVersions, androidVersions, iosVersions } from './ua-data.js';
+  <script>
+    // All data inside HTML - No external file needed
+    const androidDevices = ["SM-G998B","SM-S928B","SM-S918B","SM-S931B","SM-A715F","SM-G996U","SM-S146VL","SM-F956N","Pixel 8","Pixel 9 Pro","vivo 1716","vivo 1907","vivo 2254","CPH2581","CPH2629","CPH2363","TECNO KJ5","Infinix X6532","Infinix X6851B","2506BPN68G","T450H","SM-S906W","SM-S931W","RMX3430"];
+    
+    const chromeVersions = ["149.0.7827.116","148.0.7778.167","147.0.7727.24","149.0.7827.150","148.0.7778.215"];
+    
+    const androidVersions = ["13","14","15","16"];
+    const iosVersions = ["26.5.1","26.5","26.4.1","26.4","26.3","26.2","26.1","26.0"];
 
     function randomItem(arr) {
       return arr[Math.floor(Math.random() * arr.length)];
     }
 
-    function populateCheckboxes(containerId, values, defaultChecked = true) {
+    function populateCheckboxes(containerId, values) {
       const container = document.getElementById(containerId);
       container.innerHTML = '';
       values.forEach(v => {
         const label = document.createElement('label');
-        label.innerHTML = `<input type="checkbox" value="${v}" ${defaultChecked ? 'checked' : ''}> ${v}`;
+        label.innerHTML = `<input type="checkbox" value="${v}" checked> ${v}`;
         container.appendChild(label);
       });
     }
@@ -130,20 +136,16 @@
         let ua = '';
 
         if (mode === 'random') {
-          // Completely random across everything
           const rand = Math.random();
-          if (rand < 0.4) {
-            // Android
+          if (rand < 0.45) {
             const ver = randomItem(androidVersions);
             const model = randomItem(androidDevices);
             const chVer = randomItem(chromeVersions);
             ua = `Mozilla/5.0 (Linux; Android ${ver}; ${model}) AppleWebKit/537.36 (KHTML, like Gecko) Version/4.0 Chrome/${chVer} Mobile Safari/537.36`;
-          } else if (rand < 0.7) {
-            // iOS
+          } else if (rand < 0.75) {
             const ver = randomItem(iosVersions);
             ua = `Mozilla/5.0 (iPhone; CPU iPhone OS ${ver.replace(/\./g, '_')} like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/${ver} Mobile/15E148 Safari/604.1`;
           } else {
-            // Desktop
             const isM = Math.random() > 0.5;
             if (Math.random() > 0.5) {
               ua = `Mozilla/5.0 (${isM ? 'Macintosh; Apple Silicon' : 'Macintosh; Intel Mac OS X 10_15_7'}) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/149.0.0.0 Safari/537.36`;
@@ -153,7 +155,6 @@
           }
         } 
         else {
-          // Specific mode
           const os = document.getElementById('os').value;
           if (os === 'android') {
             const selectedVers = getSelectedValues('android-vers');
@@ -167,7 +168,7 @@
             const ver = selectedVers.length ? randomItem(selectedVers) : randomItem(iosVersions);
             ua = `Mozilla/5.0 (iPhone; CPU iPhone OS ${ver.replace(/\./g, '_')} like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/${ver} Mobile/15E148 Safari/604.1`;
           }
-          else { // desktop
+          else {
             const browser = document.getElementById('browser').value;
             const isM = document.getElementById('mac-version').value.includes('11');
             if (browser === 'chrome') {
@@ -188,8 +189,16 @@
     }
 
     function copyAll() {
-      const text = document.getElementById('ua-list').textContent;
-      if (text) navigator.clipboard.writeText(text).then(() => alert('✅ All User Agents copied!'));
+      const text = document.getElementById('ua-list').textContent.trim();
+      if (!text || text === "Click \"Generate\" to start...") {
+        alert("Please generate some User Agents first!");
+        return;
+      }
+      navigator.clipboard.writeText(text).then(() => {
+        alert('✅ Successfully copied all User Agents!');
+      }).catch(() => {
+        alert('Failed to copy. Please try again.');
+      });
     }
 
     // Initialize
